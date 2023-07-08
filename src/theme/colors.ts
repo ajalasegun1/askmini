@@ -6,4 +6,5 @@ export enum Colors {
   purple = 'rgb(233 213 255)',
   cyan = 'rgb(165 243 252)',
   neutral200 = 'rgb(229 229 229)',
+  neutral400 = 'rgb(163 163 163)',
 }

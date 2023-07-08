@@ -1,4 +1,12 @@
-import {StyleSheet, Text, View, Image, ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import smallImage from '../assets/images/welcome.png';
@@ -7,9 +15,15 @@ import Features from '../components/Features';
 import dummyMessages from '../constants/dummyMessages';
 import {MotiView} from 'moti';
 import {Colors} from '../theme/colors';
+import recordImg from '../assets/images/recordingIcon.png';
+import recordingVoice from '../assets/images/voiceLoading.gif';
 
 const Home = () => {
   const [messages, setMessages] = useState(dummyMessages);
+  const [recording, setRecording] = useState(false);
+  const [speaking, setSpeaking] = useState(true);
+  const clear = () => setMessages([]);
+  const stop = () => setSpeaking(false);
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeContainer}>
@@ -38,7 +52,7 @@ const Home = () => {
                   if (item.role === 'assistant') {
                     if (item.content.includes('https')) {
                       return (
-                        <View style={styles.msgImageContainer}>
+                        <View style={styles.msgImageContainer} key={key}>
                           <View style={styles.imgcontainer2}>
                             <Image
                               source={{uri: item.content}}
@@ -75,6 +89,36 @@ const Home = () => {
         ) : (
           <Features />
         )}
+
+        <View style={styles.btnsect}>
+          {recording ? (
+            <TouchableOpacity activeOpacity={0.8}>
+              <Image source={recordingVoice} style={styles.btnImg} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity activeOpacity={0.8}>
+              <Image source={recordImg} style={styles.btnImg} />
+            </TouchableOpacity>
+          )}
+
+          {messages.length > 0 && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.leftBtn}
+              onPress={clear}>
+              <Text style={{color: '#fff', fontWeight: '500'}}>Clear</Text>
+            </TouchableOpacity>
+          )}
+
+          {speaking && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.rightBtn}
+              onPress={stop}>
+              <Text style={{color: '#fff', fontWeight: '500'}}>Stop</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -96,8 +140,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   img: {
-    width: wp(20),
-    height: wp(20),
+    width: hp(15),
+    height: hp(15),
   },
   messageContainer: {
     flex: 1,
@@ -148,5 +192,30 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderTopLeftRadius: 0,
     backgroundColor: Colors.emerald200,
+  },
+  btnsect: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Platform.OS === 'android' ? 10 : 0,
+  },
+  btnImg: {
+    width: hp(10),
+    height: hp(10),
+    borderRadius: hp(10),
+  },
+  leftBtn: {
+    backgroundColor: Colors.neutral400,
+    padding: 8,
+    borderRadius: 16,
+    position: 'absolute',
+    right: 40,
+  },
+  rightBtn: {
+    backgroundColor: 'red',
+    padding: 8,
+    borderRadius: 16,
+    position: 'absolute',
+    left: 40,
   },
 });
