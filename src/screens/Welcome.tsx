@@ -1,10 +1,18 @@
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  Image,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import React, {FC} from 'react';
 import {WelcomeScreenNavigationProp} from '../navigation/types';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {wp} from '../utils/utilities';
 import {Colors} from '../theme/colors';
 import welcomeImage from '../assets/images/welcome.png';
+import {MotiView} from 'moti';
 
 const Welcome: FC<WelcomeScreenNavigationProp> = ({navigation}) => {
   const goHome = () => navigation.push('Home');
@@ -14,12 +22,27 @@ const Welcome: FC<WelcomeScreenNavigationProp> = ({navigation}) => {
         <Text style={styles.title}>Mini</Text>
         <Text style={styles.sub}>Ask and be knowledgable</Text>
       </View>
-      <View style={styles.imgContainer}>
+      <MotiView
+        from={{translateY: 0}}
+        animate={{translateY: -30}}
+        transition={{
+          loop: true,
+          type: 'timing',
+          duration: 2000,
+        }}
+        style={styles.imgContainer}>
         <Image source={welcomeImage} style={styles.img} />
-      </View>
+      </MotiView>
+
       <Pressable style={styles.button} onPress={goHome}>
         <Text style={styles.btnText}>Get Started</Text>
       </Pressable>
+
+      <StatusBar
+        translucent={true}
+        backgroundColor={'transparent'}
+        barStyle={'dark-content'}
+      />
     </SafeAreaView>
   );
 };
