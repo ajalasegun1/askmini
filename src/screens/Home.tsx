@@ -43,7 +43,6 @@ const Home = () => {
   };
   const ScrollRef = useRef<ScrollView>(null);
   useEffect(() => {
-    // console.log(Voice.getSpeechRecognitionServices());
     Voice.onSpeechStart = onSpeechStartHandler;
     Voice.onSpeechEnd = onSpeechEndHandler;
     Voice.onSpeechResults = onSpeechResultsHandler;
@@ -97,8 +96,6 @@ const Home = () => {
         setRecording(false);
         fetchResponse();
       }
-
-      // fetch result from chatgpt
     } catch (error) {
       console.log({error});
     }
