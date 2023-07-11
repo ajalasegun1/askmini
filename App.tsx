@@ -7,7 +7,6 @@
 import 'react-native-reanimated';
 import 'react-native-gesture-handler';
 import React from 'react';
-import {StyleSheet} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import RootStack from './src/navigation/RootStack';
@@ -19,7 +18,5 @@ function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({});
 
 export default App;
