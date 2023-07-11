@@ -13,7 +13,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import smallImage from '../assets/images/welcome.png';
 import {wp, hp} from '../utils/utilities';
 import Features from '../components/Features';
-import dummyMessages from '../constants/dummyMessages';
 import {MotiView} from 'moti';
 import {Colors} from '../theme/colors';
 import recordImg from '../assets/images/recordingIcon.png';
@@ -26,6 +25,7 @@ import Voice, {
 } from '@react-native-voice/voice';
 import {Message, apiCall} from '../api/openAI';
 import loader from '../assets/images/loading.gif';
+import Tts from 'react-native-tts';
 
 const Home = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,7 +37,10 @@ const Home = () => {
     setMessages([]);
     setLoading(false);
   };
-  const stop = () => setSpeaking(false);
+  const stop = () => {
+    setSpeaking(false);
+    Tts.stop();
+  };
   const ScrollRef = useRef<ScrollView>(null);
   useEffect(() => {
     // console.log(Voice.getSpeechRecognitionServices());
@@ -46,6 +49,16 @@ const Home = () => {
     Voice.onSpeechResults = onSpeechResultsHandler;
     Voice.onSpeechError = onSpeechErrorHandler;
 
+    Tts.setIgnoreSilentSwitch(true);
+    Tts.addEventListener('tts-progress', event =>
+      console.log('progress', event),
+    );
+    Tts.addEventListener('tts-start', event => console.log('start', event));
+    Tts.addEventListener('tts-finish', event => {
+      setSpeaking(false);
+    });
+    Tts.addEventListener('tts-cancel', event => console.log('cancel', event));
+
     // () => Voice.destroy().then(Voice.removeAllListeners);
   }, []);
   useEffect(() => {
@@ -53,17 +66,9 @@ const Home = () => {
       fetchResponse();
     }
   }, [result]);
-  const onSpeechStartHandler = (e: SpeechStartEvent) => {
-    // console.log('Speech started', {e});
-    setSpeaking(true);
-  };
-  const onSpeechEndHandler = (e: SpeechEndEvent) => {
-    // console.log('Speech ended', {e});
-    setSpeaking(false);
-  };
+  const onSpeechStartHandler = (e: SpeechStartEvent) => {};
+  const onSpeechEndHandler = (e: SpeechEndEvent) => {};
   const onSpeechResultsHandler = (e: SpeechResultsEvent) => {
-    // console.log('speech result', {e});
-
     if (e.value && e.value[0].length > 0) {
       setResult(e.value[0]);
       if (Platform.OS === 'android') {
@@ -76,7 +81,9 @@ const Home = () => {
     console.log('speech error', {e});
   };
   const startRecording = async () => {
+    setSpeaking(false);
     setRecording(true);
+    Tts.stop();
     try {
       await Voice.start('en-GB');
     } catch (error) {
@@ -96,17 +103,8 @@ const Home = () => {
       console.log({error});
     }
   };
-  // const check = async () => {
-  //   console.log('check was called');
-  //   try {
-  //     const result = await Voice.getSpeechRecognitionServices();
-  //     console.log({result});
-  //   } catch (error) {
-  //     console.log({error});
-  //   }
-  // };
+
   const fetchResponse = async () => {
-    // console.log('I was fired!');
     if (result.trim().length > 0) {
       let newMessages = [...messages];
       newMessages.push({role: 'user', content: result.trim()});
@@ -114,13 +112,12 @@ const Home = () => {
       try {
         setLoading(true);
         const res = await apiCall(result.trim(), newMessages);
-        console.log({res});
         if (res.success && res.data) {
+          startTextToSpeech(res.data[res.data.length - 1].content);
           setLoading(false);
           setMessages([...res.data]);
-          ScrollRef.current?.scrollToEnd({animated: true});
+          scrollToBottom();
         } else {
-          console.log({fetchresponseerror: res.data});
           Alert.alert('Error');
           setLoading(false);
         }
@@ -128,9 +125,25 @@ const Home = () => {
         setLoading(false);
         Alert.alert('Error');
       }
-    } else {
-      // console.log('NOTHING FOR YOUUUU');
     }
+  };
+  const scrollToBottom = () =>
+    setTimeout(() => ScrollRef.current?.scrollToEnd({animated: true}), 400);
+  const startTextToSpeech = async (words: string) => {
+    Tts.getInitStatus().then(() => {
+      if (!words.includes('https')) {
+        setSpeaking(true);
+        Tts.speak(words, {
+          iosVoiceId: 'com.apple.ttsbundle.Moira-compact',
+          rate: 0.5,
+          androidParams: {
+            KEY_PARAM_PAN: -1,
+            KEY_PARAM_VOLUME: 0.5,
+            KEY_PARAM_STREAM: 'STREAM_MUSIC',
+          },
+        });
+      }
+    });
   };
   return (
     <View style={styles.container}>
